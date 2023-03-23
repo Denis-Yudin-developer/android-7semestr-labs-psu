@@ -1,72 +1,59 @@
 package com.example.android_lab_1;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.view.View;
-import android.widget.Button;
-import android.widget.RelativeLayout;
+import android.widget.EditText;
 import android.widget.TextView;
-
-import androidx.annotation.Nullable;
+import android.widget.Toast;
 
 
 public class MainActivity extends Activity {
-    private Button button1;
-    private RelativeLayout.LayoutParams linnear_lay1;
 
-    private Button button2;
-    private RelativeLayout.LayoutParams linnear_lay2;
+    private EditText username;
+    private EditText password;
+    private TextView attempts;
+    private TextView numberOfAttempts;
 
-    private TextView text_view1;
+    int numberOfRemainingLoginAttempts = 5;
 
-    private int clicks_count1 = 0;
-    private int clicks_count2 = 0;
-
+    @SuppressLint("SetTextI18n")
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        button1 = findViewById(R.id.button1);
-        linnear_lay1 = new RelativeLayout.LayoutParams(button1.getLayoutParams());
+        username = (EditText) findViewById(R.id.edit_user);
+        password = (EditText) findViewById(R.id.edit_password);
+        attempts = (TextView) findViewById(R.id.attempts);
+        numberOfAttempts = (TextView) findViewById(R.id.number_of_attempts);
+        numberOfAttempts.setText(Integer.toString(numberOfRemainingLoginAttempts));
 
-        button2 = findViewById(R.id.button2);
-        linnear_lay2 = new RelativeLayout.LayoutParams(button2.getLayoutParams());
-
-        text_view1 = findViewById(R.id.text_view1);
-
-
-        button1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                click1();
-
-
-            }
-
-        });
-
-        button2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                click2();
-            }
-
-        });
     }
 
-    public void click1(){
-        clicks_count1++;
-        text_view1.setText("Кнопки были нажаты " + clicks_count1 + " " + clicks_count2 + " раз(а)");
+    @SuppressLint("SetTextI18n")
+    public void Login(View view) {
+
+        if (username.getText().toString().equals("anton") &&
+                password.getText().toString().equals("anahin")) {
+            Toast.makeText(getApplicationContext(), "Вход выполнен!",Toast.LENGTH_SHORT).show();
+
+            Intent intent = new Intent(MainActivity.this,TableActivity.class);
+            startActivity(intent);
+        }
+
+        else {
+            Toast.makeText(getApplicationContext(), "Неправильные данные!",Toast.LENGTH_SHORT).show();
+            numberOfRemainingLoginAttempts--;
+            if(numberOfRemainingLoginAttempts == 0)
+                finish();
+
+            attempts.setVisibility(View.VISIBLE);
+            numberOfAttempts.setVisibility(View.VISIBLE);
+            numberOfAttempts.setText(Integer.toString(numberOfRemainingLoginAttempts));
+
+        }
     }
-
-    public void click2(){
-        clicks_count2++;
-        text_view1.setText("Кнопки были нажаты " + clicks_count1 + " " + clicks_count2 + " раз(а)");
-    }
-
-
-
 }
