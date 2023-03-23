@@ -13,7 +13,7 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
-        android:text="Авторизация:"
+        android:text="@string/authorization"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <TextView
@@ -24,7 +24,7 @@
         android:layout_alignParentLeft="true"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="75dp"
-        android:text="Пользователь:"
+        android:text="@string/display_user"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <EditText
@@ -35,7 +35,7 @@
         android:layout_marginLeft="45dp"
         android:layout_marginBottom="-12dp"
         android:layout_toRightOf="@+id/user_text"
-        android:hint="введите имя"
+        android:hint="@string/type_in_your_name"
         android:textAlignment="center">
 
         <requestFocus />
@@ -48,7 +48,7 @@
         android:layout_below="@+id/user_text"
         android:layout_alignLeft="@+id/user_text"
         android:layout_marginTop="40dp"
-        android:text="Пароль: "
+        android:text="@string/display_password"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <EditText
@@ -61,7 +61,7 @@
         android:layout_marginLeft="-3dp"
         android:layout_marginRight="-3dp"
         android:layout_marginBottom="-6dp"
-        android:hint="введите пароль"
+        android:hint="@string/type_in_your_password"
         android:inputType="textPassword"
         android:textAlignment="center" />
 
@@ -79,15 +79,17 @@
 
     <Button
         android:id="@+id/button_login"
-        android:layout_width="wrap_content"
+        android:layout_width="149dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/edit_password"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="34dp"
-        android:layout_marginEnd="82dp"
+        android:layout_marginStart="110dp"
+        android:layout_marginTop="43dp"
+        android:layout_marginEnd="43dp"
+        android:layout_toEndOf="@+id/attempts"
         android:backgroundTint="@android:color/holo_blue_light"
         android:onClick="login"
-        android:text="Войти"
+        android:text="@string/login"
         android:textColor="@color/white" />
 
     <TextView
@@ -121,7 +123,20 @@
         android:layout_marginStart="267dp"
         android:layout_marginEnd="56dp"
         android:layout_marginBottom="77dp"
-        android:text="Ру"
+        android:text="@string/current_language"
         android:onClick="changeLocale"/>
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="143dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button_login"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="221dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="46dp"
+        android:onClick="signUp"
+        android:text="Регистрация" />
 
 </RelativeLayout>
