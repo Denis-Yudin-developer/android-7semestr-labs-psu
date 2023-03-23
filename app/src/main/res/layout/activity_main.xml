@@ -13,17 +13,17 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
-        android:text="Авторизация"
+        android:text="Авторизация:"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <TextView
         android:id="@+id/user_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
         android:layout_below="@+id/Login"
-        android:layout_marginTop="75dp"
+        android:layout_alignParentLeft="true"
         android:layout_marginLeft="10dp"
+        android:layout_marginTop="75dp"
         android:text="Пользователь:"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -35,7 +35,7 @@
         android:layout_marginLeft="45dp"
         android:layout_marginBottom="-12dp"
         android:layout_toRightOf="@+id/user_text"
-        android:hint="введите имя "
+        android:hint="введите имя"
         android:textAlignment="center">
 
         <requestFocus />
@@ -45,10 +45,10 @@
         android:id="@+id/password_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/user_text"
         android:layout_below="@+id/user_text"
+        android:layout_alignLeft="@+id/user_text"
         android:layout_marginTop="40dp"
-        android:text="Пароль:"
+        android:text="Пароль: "
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <EditText
@@ -86,7 +86,7 @@
         android:layout_marginTop="34dp"
         android:layout_marginEnd="82dp"
         android:backgroundTint="@android:color/holo_blue_light"
-        android:onClick="Login"
+        android:onClick="login"
         android:text="Войти"
         android:textColor="@color/white" />
 
@@ -110,5 +110,18 @@
         android:layout_marginBottom="57dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="267dp"
+        android:layout_marginEnd="56dp"
+        android:layout_marginBottom="77dp"
+        android:text="Ру"
+        android:onClick="changeLocale"/>
 
 </RelativeLayout>
