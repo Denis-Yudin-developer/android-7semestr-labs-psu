@@ -26,8 +26,8 @@ import java.util.Collections;
 
 public class TableActivity extends AppCompatActivity {
 
-    ArrayList<String> entries = new ArrayList<>();
-    ArrayList<String> selectedEntries = new ArrayList<>();
+    ArrayList<String> entries = new ArrayList<String>();
+    ArrayList<String> selectedEntries = new ArrayList<String>();
     ArrayAdapter<String> adapter;
     ListView entriesList;
     String accountName;
@@ -43,28 +43,22 @@ public class TableActivity extends AppCompatActivity {
 
         dbHelper = new DBHelper(this);
 
-        // добавляем начальные элементы
         Collections.addAll(entries);
 
         Log.i("AppLogger", "Переопределение onCreate у TableActivity");
         accountName = getIntent().getExtras().getString("Lab3");
-        TextView textView2 = findViewById(R.id.textView2);
+        TextView textView2 = (TextView) findViewById(R.id.textView2);
         textView2.setText(accountName);
         sharedPref = this.getSharedPreferences(accountName, Context.MODE_PRIVATE);
 
-        // получаем элемент ListView
         entriesList = findViewById(R.id.acc_table);
-        // создаем адаптер
         adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_multiple_choice, entries);
-        // устанавливаем для списка адаптер
         entriesList.setAdapter(adapter);
 
-        // обработка установки и снятия отметки в списке
         entriesList.setOnItemClickListener(new AdapterView.OnItemClickListener(){
             @Override
             public void onItemClick(AdapterView<?> parent, View v, int position, long id)
             {
-                // получаем нажатый элемент
                 String entrie = adapter.getItem(position);
                 if(entriesList.isItemChecked(position))
                     selectedEntries.add(entrie);
@@ -112,17 +106,15 @@ public class TableActivity extends AppCompatActivity {
 
     public void addEntrie(View view){
 
-        EditText entrieEditText = findViewById(R.id.entrie);
-        String entrie  = entrieEditText.getText().toString();
+        EditText entrieET = findViewById(R.id.entrie);
+        String entrie  = entrieET.getText().toString();
         if(!entrie.isEmpty()){
             adapter.add(entrie);
-            entrieEditText.setText("");
+            entrieET.setText("");
             adapter.notifyDataSetChanged();
         }
     }
     public void removeEntrie(View view){
-        // получаем и удаляем выделенные элементы
-
         if(selectedEntries.size() == 0 && entries.size() != 0) {
             int numOfLastEntrie = entries.size() - 1;
             adapter.remove(entries.get(numOfLastEntrie));
@@ -131,9 +123,7 @@ public class TableActivity extends AppCompatActivity {
         for(int i=0; i < selectedEntries.size();i++){
             adapter.remove(selectedEntries.get(i));
         }
-        // снимаем все ранее установленные отметки
         entriesList.clearChoices();
-        // очищаем массив выбраных объектов
         selectedEntries.clear();
 
         adapter.notifyDataSetChanged();
@@ -170,15 +160,9 @@ public class TableActivity extends AppCompatActivity {
         int height = metrics.heightPixels;
 
         final Dialog dialog = new Dialog(this);
-        //We have added a title in the custom layout. So let's disable the default title.
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        //The user will be able to cancel the dialog bu clicking anywhere outside the dialog.
         dialog.setCancelable(true);
-        //Mention the name of the layout of your custom dialog.
         dialog.setContentView(R.layout.dialog_table);
-
-        //Initializing the views of the dialog.
-
 
         final EditText rePassword = dialog.findViewById(R.id.repass);
         final EditText newPassword = dialog.findViewById(R.id.new_pass);
@@ -188,10 +172,23 @@ public class TableActivity extends AppCompatActivity {
         changePass.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String repass = rePassword.getText().toString();
-                String pass = newPassword.getText().toString();
+                changePass.setEnabled(false);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String repass = rePassword.getText().toString();
+                        String pass = newPassword.getText().toString();
+                        changePassword(repass, pass);
+                        changePass.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                changePass.setEnabled(true);
+                            }
+                        });
 
-                changePassword(repass, pass);
+                    }
+                }).start();
+
             }
         });
 
@@ -210,23 +207,48 @@ public class TableActivity extends AppCompatActivity {
         Log.i("AppLogger", "rePass = " + rePass + " ; pass = " + pass);
 
         if(rePass.equals("") || pass.equals("")){
-            Toast.makeText(this,
-                    "Ошибка. Есть незаполненные поля.", Toast.LENGTH_SHORT).show();
+            this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(),
+                            "Ошибка. Есть незаполненные поля.", Toast.LENGTH_SHORT).show();
+                }
+            });
+
             return;
         }
 
         if(!dbHelper.checkUsernamePassword(accountName, rePass)){
-            Toast.makeText(this,
-                    "Ошибка. Неправильный пароль.", Toast.LENGTH_SHORT).show();
+            this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(),
+                            "Ошибка. Неправильный пароль.", Toast.LENGTH_SHORT).show();
+                }
+            });
+
             return;
         }
 
         if (dbHelper.changePassword(accountName, rePass, pass)){
-            Toast.makeText(this,
-                    "Пароль успешно изменён", Toast.LENGTH_SHORT).show();
+            this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(),
+                            "Пароль успешно изменён", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+
         } else {
-            Toast.makeText(this,
-                    "Ошибка при изменении пароля", Toast.LENGTH_SHORT).show();
+            this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(),
+                            "Ошибка при изменении пароля", Toast.LENGTH_SHORT).show();
+                }
+            });
+
         }
 
         return;

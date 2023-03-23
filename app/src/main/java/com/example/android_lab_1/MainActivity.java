@@ -9,6 +9,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,19 +17,17 @@ import android.widget.Toast;
 import java.util.Locale;
 
 public class MainActivity extends Activity {
-
-    // Объявляем об использовании следующих объектов:
     private EditText username;
     private EditText password;
     private TextView attempts;
     private TextView numberOfAttempts;
+    private Button loginBttn;
 
     private SharedPreferences sharedPref;
     private final String saveLoginKey = "save_login";
 
     DBHelper dbHelper;
 
-    // Число для подсчета попыток залогиниться:
     int numberOfRemainingLoginAttempts = 5;
 
     @SuppressLint("SetTextI18n")
@@ -40,13 +39,34 @@ public class MainActivity extends Activity {
 
         sharedPref = this.getSharedPreferences("login", Context.MODE_PRIVATE);
 
-        // Связываемся с элементами нашего интерфейса:
-        username = (EditText) findViewById(R.id.edit_user);
-        password = (EditText) findViewById(R.id.edit_password);
-        attempts = (TextView) findViewById(R.id.attempts);
-        numberOfAttempts = (TextView) findViewById(R.id.number_of_attempts);
+        username = findViewById(R.id.edit_user);
+        password = findViewById(R.id.edit_password);
+        attempts = findViewById(R.id.attempts);
+        numberOfAttempts = findViewById(R.id.number_of_attempts);
         numberOfAttempts.setText(Integer.toString(numberOfRemainingLoginAttempts));
         dbHelper = new DBHelper(this);
+        loginBttn = findViewById(R.id.button_login);
+
+        loginBttn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loginBttn.setEnabled(false);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        login();
+                        loginBttn.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                loginBttn.setEnabled(true);
+                            }
+                        });
+
+                    }
+                }).start();
+            }
+        });
+
 
         Toast.makeText(MainActivity.this,
                 "Переопределение onCreate у MainActivity", Toast.LENGTH_SHORT).show();
@@ -88,38 +108,59 @@ public class MainActivity extends Activity {
         Log.i("AppLogger", "Переопределение onRestart у MainActivity");
     }
 
-    public void login(View view) {
-
-        // показываем Toast сообщение об успешном входе:
+    public void login() {
         String name = username.getText().toString();
         String pass = password.getText().toString();
 
         if(name.equals("admin") && pass.equals("admin")){
             Intent intent = new Intent(MainActivity.this, AdminActivity.class);
             startActivity(intent);
+
             return;
         }
 
         if (dbHelper.checkUsernamePassword(name, pass)) {
-            Toast.makeText(getApplicationContext(), "Вход выполнен!",Toast.LENGTH_SHORT).show();
 
-            // Выполняем переход на другой экран:
+            this.runOnUiThread(new Runnable() {
+                public void run() {
+                    Toast.makeText(getApplicationContext(), "Вход выполнен!",Toast.LENGTH_SHORT).show();
+                }
+            });
             Intent intent = new Intent(MainActivity.this,TableActivity.class);
             intent.putExtra("Lab3", name);
+
             startActivity(intent);
         }
 
-        // В другом случае выдаем сообщение с ошибкой:
         else {
-            Toast.makeText(getApplicationContext(), "Неправильные данные!",Toast.LENGTH_SHORT).show();
+
+            this.runOnUiThread(new Runnable() {
+                public void run() {
+                    Toast.makeText(getApplicationContext(), "Неправильные данные!",Toast.LENGTH_SHORT).show();
+                }
+            });
+
+
             numberOfRemainingLoginAttempts--;
             if(numberOfRemainingLoginAttempts == 0)
                 finish();
 
-            // Делаем видимыми текстовые поля, указывающие на количество оставшихся попыток:
-            attempts.setVisibility(View.VISIBLE);
-            numberOfAttempts.setVisibility(View.VISIBLE);
-            numberOfAttempts.setText(Integer.toString(numberOfRemainingLoginAttempts));
+            attempts.post(new Runnable() {
+                @Override
+                public void run() {
+                    attempts.setVisibility(View.VISIBLE);
+
+                }
+            });
+
+            numberOfAttempts.post(new Runnable() {
+                @Override
+                public void run() {
+                    numberOfAttempts.setVisibility(View.VISIBLE);
+                    numberOfAttempts.setText(Integer.toString(numberOfRemainingLoginAttempts));
+
+                }
+            });
 
         }
     }
