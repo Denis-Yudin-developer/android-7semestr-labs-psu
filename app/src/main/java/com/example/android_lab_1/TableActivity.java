@@ -1,18 +1,21 @@
 package com.example.android_lab_1;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-
-import androidx.appcompat.app.AppCompatActivity;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
 public class TableActivity extends AppCompatActivity {
+
     ArrayList<String> entries = new ArrayList<String>();
     ArrayList<String> selectedEntries = new ArrayList<String>();
     ArrayAdapter<String> adapter;
@@ -23,6 +26,12 @@ public class TableActivity extends AppCompatActivity {
         setContentView(R.layout.activity_table);
 
         Collections.addAll(entries);
+
+        Log.i("AppLogger", "Переопределение onCreate у TableActivity");
+        String accountName = getIntent().getExtras().getString("Lab3");
+        TextView textView2 = (TextView) findViewById(R.id.textView2);
+        textView2.setText(accountName);
+
         entriesList = findViewById(R.id.entriesList);
         adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_multiple_choice, entries);
         entriesList.setAdapter(adapter);
@@ -40,6 +49,33 @@ public class TableActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onStop(){
+        super.onStop();
+        Log.i("AppLogger", "Переопределение onStop у TableActivity");
+    }
+    @Override
+    protected void onStart(){
+        super.onStart();
+        Log.i("AppLogger", "Переопределение onStart у TableActivity");
+    }
+    @Override
+    protected void onPause(){
+        super.onPause();
+        Log.i("AppLogger", "Переопределение onPause у TableActivity");
+    }
+    @Override
+    protected void onResume(){
+        super.onResume();
+        Log.i("AppLogger", "Переопределение onResume у TableActivity");
+    }
+
+    @Override
+    protected void onRestart(){
+        super.onRestart();
+        Log.i("AppLogger", "Переопределение onRestart у TableActivity");
+    }
+
     public void addEntrie(View view){
 
         EditText entrieET = findViewById(R.id.entrie);
@@ -51,7 +87,6 @@ public class TableActivity extends AppCompatActivity {
         }
     }
     public void removeEntrie(View view){
-
         if(selectedEntries.size() == 0 && entries.size() != 0) {
             int numOfLastEntrie = entries.size() - 1;
             adapter.remove(entries.get(numOfLastEntrie));
