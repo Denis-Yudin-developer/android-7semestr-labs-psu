@@ -3,7 +3,11 @@ package com.example.android_lab_1;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
@@ -19,6 +23,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
@@ -32,9 +37,45 @@ public class TableActivity extends AppCompatActivity {
     ListView entriesList;
     String accountName;
     DBHelper dbHelper;
+    Button changePass;
 
     private SharedPreferences sharedPref;
-    private final String saveTableKey = "save_table";
+
+    ThreadTask threadTask;
+    final Looper looper = Looper.getMainLooper();
+
+    final Handler handler = new Handler(looper) {
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        public void handleMessage(Message msg) {
+
+            ArrayList<String> msgList = (ArrayList<String>)msg.obj;
+
+            if (msg.sendingUid == 1) {
+                switch (msgList.get(0)){
+                    case "FreeFields":
+                        Toast.makeText(getApplicationContext(),
+                                "Ошибка. Есть незаполненные поля", Toast.LENGTH_SHORT).show();
+                        break;
+                    case "IncorrectPass":
+                        Toast.makeText(getApplicationContext(),
+                                "Ошибка. Неправильный пароль.", Toast.LENGTH_SHORT).show();
+                        break;
+
+                    case "Success":
+                        Toast.makeText(getApplicationContext(),
+                                "Пароль успешно изменён", Toast.LENGTH_SHORT).show();
+                        break;
+
+                    default:
+                        Toast.makeText(getApplicationContext(),
+                                "Ошибка при изменении пароля", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+                changePass.setEnabled(true);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +83,7 @@ public class TableActivity extends AppCompatActivity {
         setContentView(R.layout.activity_table);
 
         dbHelper = new DBHelper(this);
+        threadTask = new ThreadTask(handler, getApplicationContext());
 
         Collections.addAll(entries);
 
@@ -54,11 +96,11 @@ public class TableActivity extends AppCompatActivity {
         entriesList = findViewById(R.id.acc_table);
         adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_multiple_choice, entries);
         entriesList.setAdapter(adapter);
-
         entriesList.setOnItemClickListener(new AdapterView.OnItemClickListener(){
             @Override
             public void onItemClick(AdapterView<?> parent, View v, int position, long id)
             {
+                // получаем нажатый элемент
                 String entrie = adapter.getItem(position);
                 if(entriesList.isItemChecked(position))
                     selectedEntries.add(entrie);
@@ -105,7 +147,6 @@ public class TableActivity extends AppCompatActivity {
     }
 
     public void addEntrie(View view){
-
         EditText entrieET = findViewById(R.id.entrie);
         String entrie  = entrieET.getText().toString();
         if(!entrie.isEmpty()){
@@ -167,27 +208,16 @@ public class TableActivity extends AppCompatActivity {
         final EditText rePassword = dialog.findViewById(R.id.repass);
         final EditText newPassword = dialog.findViewById(R.id.new_pass);
         Button changePass = dialog.findViewById(R.id.change_pass_bttn);
+        this.changePass = changePass;
         Button exitDialog = dialog.findViewById(R.id.ch_pass_close_dialog);
 
         changePass.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 changePass.setEnabled(false);
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        String repass = rePassword.getText().toString();
-                        String pass = newPassword.getText().toString();
-                        changePassword(repass, pass);
-                        changePass.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                changePass.setEnabled(true);
-                            }
-                        });
-
-                    }
-                }).start();
+                String repass = rePassword.getText().toString();
+                String pass = newPassword.getText().toString();
+                threadTask.changePass(accountName, repass, pass);
 
             }
         });
@@ -202,56 +232,5 @@ public class TableActivity extends AppCompatActivity {
         dialog.getWindow().setLayout((6 * width)/7, height/2);
         dialog.show();
     }
-    private void changePassword(String rePass, String pass){
 
-        Log.i("AppLogger", "rePass = " + rePass + " ; pass = " + pass);
-
-        if(rePass.equals("") || pass.equals("")){
-            this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(),
-                            "Ошибка. Есть незаполненные поля.", Toast.LENGTH_SHORT).show();
-                }
-            });
-
-            return;
-        }
-
-        if(!dbHelper.checkUsernamePassword(accountName, rePass)){
-            this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(),
-                            "Ошибка. Неправильный пароль.", Toast.LENGTH_SHORT).show();
-                }
-            });
-
-            return;
-        }
-
-        if (dbHelper.changePassword(accountName, rePass, pass)){
-            this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(),
-                            "Пароль успешно изменён", Toast.LENGTH_SHORT).show();
-                }
-            });
-
-
-        } else {
-            this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(),
-                            "Ошибка при изменении пароля", Toast.LENGTH_SHORT).show();
-                }
-            });
-
-        }
-
-        return;
-
-    }
 }

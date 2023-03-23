@@ -1,6 +1,9 @@
 package com.example.android_lab_1;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -21,11 +24,49 @@ public class AdminActivity extends AppCompatActivity {
     DBHelper dbHelper;
     Button delAccount;
 
+    ThreadTask threadTask;
+    final Looper looper = Looper.getMainLooper();
+
+    final Handler handler = new Handler(looper) {
+        @Override
+        public void handleMessage(Message msg) {
+
+            if (msg.sendingUid == 1) {
+
+                ArrayList<String> list = (ArrayList<String>)msg.obj;
+                adapter.clear();
+                accounts.clear();
+                for(int i = 0; i < list.size(); i++)
+                {
+                    accounts.add(list.get(i));
+                }
+            }
+
+            if(msg.sendingUid == 2){
+                ArrayList<String> msgList = (ArrayList<String>) msg.obj;
+                switch (msgList.get(0)){
+                    case "DeleteSuccess":
+                        Toast.makeText(getApplicationContext(),
+                                "Пользователь " + msgList.get(1) + " успешно удалён", Toast.LENGTH_SHORT).show();
+                        break;
+                    default:
+                        Toast.makeText(getApplicationContext(),
+                                "Ошибка удаления", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+                delAccount.setEnabled(true);
+            }
+        }
+    };
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin);
         dbHelper = new DBHelper(this);
+
+        threadTask = new ThreadTask(handler, getApplicationContext());
 
         Collections.addAll(accounts);
 
@@ -63,7 +104,7 @@ public class AdminActivity extends AppCompatActivity {
     }
     @Override
     protected void onStart(){
-        restoreTable();
+        threadTask.restoreAdminTable();
         super.onStart();
 
     }
@@ -85,47 +126,11 @@ public class AdminActivity extends AppCompatActivity {
     }
 
     public void removeAccount(){
+        delAccount.setEnabled(false);
         EditText accountET = findViewById(R.id.adm_acc_entrie);
-        String login  = accountET.getText().toString();
-        if(dbHelper.deleteUser(login)) {
-            this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(),
-                            "Пользователь " + login + " успешно удалён", Toast.LENGTH_SHORT).show();
-                }
-            });
-
-        }
-        else {
-            this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(),
-                            "Ошибка удаления", Toast.LENGTH_SHORT).show();
-                }
-            });
-
-        }
-
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                restoreTable();
-            }
-        });
-
-    }
-
-    private void restoreTable()
-    {
-        ArrayList<String> list = dbHelper.getDateList();
-        adapter.clear();
-        accounts.clear();
-        for(int i=0; i < list.size(); i = i + 2)
-        {
-            accounts.add(list.get(i) + " " + list.get(i+1));
-        }
+        String login = accountET.getText().toString();
+        threadTask.removeAccount(login);
+        threadTask.restoreAdminTable();
 
     }
 
